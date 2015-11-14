@@ -26,6 +26,15 @@ WebCall.Client = function(options) {
 
         return;
     }
+    else {
+        var ac = new this.AudioContext();
+        if (typeof(ac.createMediaStreamDestination) != 'function') {
+            if (this.debug)
+                console.log("WebCall:Client not supported");
+            this.AudioContext = false;
+            return;
+        }
+    }
 
     this.getSources = MediaStreamTrack && MediaStreamTrack.getSources;
 
