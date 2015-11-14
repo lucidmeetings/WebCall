@@ -3,6 +3,7 @@
 if (!window.WebCall) window.WebCall = {};
 
 WebCall.Client = function(options) {
+    this.debug = options.debug;
     if (this.debug)
         console.log("new WebCall.Client()");
 
@@ -35,7 +36,7 @@ WebCall.Client = function(options) {
             return;
         }
     }
-
+    
     this.getSources = MediaStreamTrack && MediaStreamTrack.getSources;
 
     // parse and assign options
