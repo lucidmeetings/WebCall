@@ -152,8 +152,12 @@ $.extend(WebCall.Client.prototype, {
             }
 
             if (this._localMediaStream) {
-                if (!this._localMediaStream.fake)
-                    this._localMediaStream.stop();
+                if (!this._localMediaStream.fake) {
+                    var tracks = this._localMediaStream.getTracks();
+                    tracks.forEach(function(element, index, array) {
+                        element.stop();
+                    });
+                }
 
                 this._localMediaStream = null;
             }
