@@ -10,7 +10,7 @@ WebCall.Client = function(options) {
     // setup JsSIP
     if (!JsSIP.debug().enabled)
         JsSIP.debug.enable("none");
-    
+
     JsSIP.C.USER_AGENT += " Browser - " + navigator.userAgent
     JsSIP.rtcninja();
 
@@ -36,7 +36,7 @@ WebCall.Client = function(options) {
             return;
         }
     }
-    
+
     this.getSources = MediaStreamTrack && MediaStreamTrack.getSources;
 
     // parse and assign options
@@ -46,18 +46,18 @@ WebCall.Client = function(options) {
     }
 
     // get sources if possible
-    
+
     if (this.getSources) {
         var self = this;
-        
+
         this.getSources(function(sources) { self._getSourcesInitial(sources); });
-    }    
+    }
 };
 
 $.extend(WebCall.Client.prototype, {
     AudioContext : null,
     getSources   : null,
-    
+
     ua              : null,
     session         : null,
     debug           : 1,
@@ -127,7 +127,7 @@ $.extend(WebCall.Client.prototype, {
 
     connect : function(connectParams) {
         this._connectParams = connectParams;
-        
+
         this._reset();
 
         this._emitEvent("preconnect");
@@ -163,10 +163,12 @@ $.extend(WebCall.Client.prototype, {
 
             if (this._localMediaStream) {
                 if (!this._localMediaStream.fake) {
-                    var tracks = this._localMediaStream.getTracks();
-                    tracks.forEach(function(element, index, array) {
-                        element.stop();
+                    this._localMediaStream.getTracks().forEach(function(track) {
+                        track.stop();
                     });
+
+                    if (this._localMediaStream.stop)
+                        this._localMediaStream.stop();
                 }
 
                 this._localMediaStream = null;
@@ -188,7 +190,7 @@ $.extend(WebCall.Client.prototype, {
     getHold : function() {
         return this._audioElement.muted;
     },
-    
+
     setHold : function(flag) {
         if (this.debug)
             console.log("WebCall:Client.setHold(" + flag + ")");
@@ -245,7 +247,7 @@ $.extend(WebCall.Client.prototype, {
 
     _connectWS : function() {
         var connectParams = this._connectParams;
-        
+
         if (this.debug)
             console.log("WebCall:Client._connectWS()", connectParams);
 
@@ -455,7 +457,12 @@ $.extend(WebCall.Client.prototype, {
             };
 
             if (this._localMediaStream) {
-                this._localMediaStream.stop();
+                this._localMediaStream.getTracks().forEach(function(track) {
+                    track.stop();
+                });
+
+                if (this._localMediaStream.stop)
+                    this._localMediaStream.stop();
                 this.session.connection.removeStream(this._localMediaStream);
             }
 
@@ -503,7 +510,7 @@ $.extend(WebCall.Client.prototype, {
     getInputVolume : function() {
         if (this._audioIn && this._audioIn.meter)
             return this._audioIn.meter.volume;
-        
+
         return 0;
     },
 
@@ -541,7 +548,7 @@ $.extend(WebCall.Client.prototype, {
         if (this.session)
             this.session.terminate();
     },
-    
+
     on : function(event, handler) {
         this._eventHandlers[event].push(handler);
     },
@@ -561,7 +568,7 @@ $.extend(WebCall.Client.prototype, {
             code : code,
             data : origEvent || null
         };
-        
+
         if (this.debug)
             console.log("WebCall:Client._emitError()", ret);
 
